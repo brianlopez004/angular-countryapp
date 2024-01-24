@@ -9,6 +9,7 @@ import { Region } from '../interfaces/region.type';
 @Injectable({ providedIn: 'root' })
 export class CountriesService {
   private url: string = 'https://restcountries.com/v3.1';
+  private localStorage!: Storage;
 
   public cacheStore: CacheStore = {
     byCapital: { term: '', countries: [] },
@@ -17,17 +18,26 @@ export class CountriesService {
   };
 
   constructor(private http: HttpClient) {
+    if (typeof window !== 'undefined') {
+      this.localStorage = window.localStorage;
+      this.loadFromLocalStorage();
+    }
+
     this.loadFromLocalStorage();
   }
 
   private saveToLocalStorage() {
-    localStorage.setItem('cacheStore', JSON.stringify(this.cacheStore));
+    if (this.localStorage) {
+      this.localStorage.setItem('cacheStore', JSON.stringify(this.cacheStore));
+    }
   }
 
   private loadFromLocalStorage() {
-    const cachedData = localStorage.getItem('cacheStore');
-    if (cachedData) {
-      this.cacheStore = JSON.parse(cachedData);
+    if (this.localStorage) {
+      const cachedData = this.localStorage.getItem('cacheStore');
+      if (cachedData) {
+        this.cacheStore = JSON.parse(cachedData);
+      }
     }
   }
 
